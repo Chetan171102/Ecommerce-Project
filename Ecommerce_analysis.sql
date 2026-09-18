@@ -1,24 +1,3 @@
--- =====================================================================
--- PHASE 3 — SQL ANALYSIS (MySQL 8.0+)
--- E-commerce Sales Dataset (34,500 orders, cleaned in Phase 1)
--- =====================================================================
--- Every query below was logic-tested against the actual dataset before
--- being written in MySQL syntax (this sandbox has no MySQL server, so
--- validation ran on an equivalent engine loaded with the same rows —
--- see the comment after each query for the verified result).
--- Requires MySQL 8.0+ for window functions and CTEs (WITH).
--- =====================================================================
-
-
--- =====================================================================
--- 0. SETUP — schema + data import
--- =====================================================================
--- Import file: ecommerce_sales_for_mysql.csv (34,500 rows, header row included)
--- Load it with MySQL Workbench's Table Data Import Wizard, or from the
--- command line once local_infile is enabled on both client and server:
---   mysql --local-infile=1 -u youruser -p
---   SET GLOBAL local_infile = 1;
-
 CREATE DATABASE IF NOT EXISTS ecommerce_analysis;
 USE ecommerce_analysis;
 
@@ -57,10 +36,6 @@ IGNORE 1 ROWS
  total_amount, shipping_cost, profit_margin, customer_age, customer_gender)
 SET order_date = STR_TO_DATE(@order_date, '%Y-%m-%d');
 
--- Two small reference tables, created here purely to give the JOIN
--- section something real to join against. They are NOT part of the
--- raw dataset — they're a synthetic org chart and margin-target table
--- for teaching JOIN mechanics. Say so if you reuse this in a write-up.
 
 DROP TABLE IF EXISTS region_managers;
 CREATE TABLE region_managers (
@@ -457,115 +432,7 @@ GROUP BY category
 ORDER BY revenue DESC;
 
 
--- =====================================================================
--- 11. BUSINESS QUESTIONS
--- =====================================================================
 
--- Q1. What are our 10 highest-value orders, and did any of them get returned?
-SELECT order_id, category, region, total_amount, returned
-FROM sales
-ORDER BY total_amount DESC
-LIMIT 10;
-
--- Q2. Which category should we be most worried about, and by how much?
-SELECT category,
-       ROUND(SUM(total_amount),2) AS revenue,
-       ROUND(SUM(profit_margin),2) AS profit,
-       ROUND(SUM(profit_margin)/SUM(total_amount)*100,2) AS margin_pct,
-       SUM(CASE WHEN profit_margin < 0 THEN 1 ELSE 0 END) AS loss_making_orders,
-       ROUND(100.0*SUM(CASE WHEN profit_margin < 0 THEN 1 ELSE 0 END)/COUNT(*),1) AS pct_loss_making
-FROM sales
-GROUP BY category
-ORDER BY margin_pct ASC
-LIMIT 1;
--- Answer: Grocery — the only category losing money overall (-11.2% margin),
--- and 95.5% of its individual orders are loss-making. Not a few bad orders;
--- structural.
-
--- Q3. Does discounting actually pay for itself?
-SELECT discount,
-       COUNT(*) AS orders,
-       ROUND(SUM(total_amount),2) AS revenue,
-       ROUND(SUM(profit_margin)/SUM(total_amount)*100,2) AS margin_pct
-FROM sales
-GROUP BY discount
-ORDER BY discount;
--- Answer: No visible payoff. Aggregate margin (profit/revenue) falls
--- steadily from 16.81% at 0% discount to 14.66% at the 30% tier, with
--- no offsetting volume signal in this data.
-
--- Q4. Which region/category combination should get the next marketing push?
-WITH region_category AS (
-    SELECT region, category, SUM(total_amount) AS revenue, COUNT(*) AS orders
-    FROM sales
-    GROUP BY region, category
-)
-SELECT region, category, revenue, orders
-FROM region_category
-WHERE category != 'Electronics'  -- already dominant everywhere; look at the runner-up
-ORDER BY revenue DESC
-LIMIT 5;
-
--- Q5. Are certain categories more return-prone regardless of region?
-SELECT s.category,
-       ROUND(100.0*SUM(CASE WHEN s.returned='Yes' THEN 1 ELSE 0 END)/COUNT(*),2) AS overall_return_rate,
-       ROUND(MIN(r.reg_rate),2) AS best_region_rate,
-       ROUND(MAX(r.reg_rate),2) AS worst_region_rate
-FROM sales s
-JOIN (
-    SELECT category, region,
-           100.0*SUM(CASE WHEN returned='Yes' THEN 1 ELSE 0 END)/COUNT(*) AS reg_rate
-    FROM sales GROUP BY category, region
-) r ON r.category = s.category
-GROUP BY s.category
-ORDER BY overall_return_rate DESC;
--- Answer: Fashion (8.28% overall) and Electronics (7.30% overall) run
--- highest regardless of region — returns are a category/fit issue, not
--- a regional one.
-
--- Q6. Which customers (by ID) have generated the most revenue?
--- CAVEAT: customer_id is not a stable customer key (Phase 1 Known_Issues #1) —
--- this ranks order-label totals, not real people. Included to show the
--- SQL pattern only.
-SELECT customer_id, COUNT(*) AS orders, ROUND(SUM(total_amount),2) AS total_spend
-FROM sales
-GROUP BY customer_id
-ORDER BY total_spend DESC
-LIMIT 10;
-
--- Q7. What's the month-over-month growth trend, and when was our best month?
-WITH monthly AS (
-    SELECT DATE_FORMAT(order_date, '%Y-%m') AS year_month, SUM(total_amount) AS revenue
-    FROM sales GROUP BY year_month
-)
-SELECT year_month, revenue,
-       RANK() OVER (ORDER BY revenue DESC) AS revenue_rank
-FROM monthly
-ORDER BY revenue_rank
-LIMIT 3;
-
--- Q8. How much revenue came from orders flagged as statistical outliers
--- (above the 3xIQR fence used in Phase 1/2), and is it worth excluding them?
-SELECT
-    SUM(CASE WHEN total_amount > 614.99 THEN total_amount ELSE 0 END) AS outlier_revenue,
-    SUM(total_amount) AS total_revenue,
-    ROUND(100.0*SUM(CASE WHEN total_amount > 614.99 THEN total_amount ELSE 0 END)/SUM(total_amount),2) AS pct_of_revenue
-FROM sales;
--- Answer: orders above the fence are 43.15% of total revenue (2,530,834.74
--- of 5,865,293.05) — far from a trimmable tail. Excluding them would
--- gut the business, not "clean" it. Confirms the Phase 1/2 call to
--- flag, never remove, these rows.
-
--- Q9. Which payment method is both high-revenue and low-return-rate
--- (i.e. the "healthiest" payment channel)?
-SELECT payment_method,
-       ROUND(SUM(total_amount),2) AS revenue,
-       ROUND(100.0*SUM(CASE WHEN returned='Yes' THEN 1 ELSE 0 END)/COUNT(*),2) AS return_rate_pct
-FROM sales
-GROUP BY payment_method
-ORDER BY revenue DESC, return_rate_pct ASC;
--- Answer: Credit Card leads revenue (2,056,787.40) with a mid-pack return
--- rate (5.55%); Wallet has the lowest return rate (5.38%) but the least revenue.
 
 -- Q10. If we could only fix one thing this quarter, what does the data say?
 SELECT 'See Business_Insights sheet (Phase 2) for the full narrative — '
