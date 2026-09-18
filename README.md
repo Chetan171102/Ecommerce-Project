@@ -1,4 +1,4 @@
-<h1 align="center">📊 E-Commerce Sales Performance & Profitability Analysis</h1>
+<h1 align="center"> E-Commerce Sales Performance & Profitability Analysis</h1>
 
 <p align="center">
   An end-to-end data analytics project — from raw data to a boardroom-ready dashboard —
@@ -19,7 +19,7 @@
 
 ---
 
-## 📌 Overview
+##  Overview
 
 This project analyzes **34,500 e-commerce orders** (12 Sep 2023 – 11 Sep 2025) to answer
 a real business question: *what's actually driving revenue and profit in this
@@ -43,7 +43,7 @@ building the dashboard and writing up business recommendations.
 
 ---
 
-## 🧭 Project Phases
+##  Project Phases
 
 ### Phase 1 — Data Cleaning & Quality Check *(Excel)*
 - Audited the raw dataset for missing values, duplicates, invalid values, and data type issues
@@ -78,7 +78,7 @@ building the dashboard and writing up business recommendations.
 
 ---
 
-## 💡 Key Insights
+##  Key Insights
 
 - **Electronics drives 56.6% of revenue but only converts at 10.4% margin** — it's the
   volume engine, not the profit engine. Beauty converts at 32.2%, the best in the portfolio.
@@ -93,7 +93,7 @@ building the dashboard and writing up business recommendations.
 
 ---
 
-## 🛠️ Tools & Skills Demonstrated
+##  Tools & Skills Demonstrated
 
 `Excel (formulas, data validation, pivot analysis)` · `SQL (joins, CTEs, window functions, CASE WHEN)` ·
 `Python (Pandas, Matplotlib, Seaborn)` · `Power BI (Power Query, DAX, data modeling, dashboard design)` ·
@@ -101,7 +101,7 @@ building the dashboard and writing up business recommendations.
 
 ---
 
-## 🔗 Live Dashboard
+##  Live Dashboard
 
 <p>
   <a href="https://ecommercesalesopearationdashboard.vercel.app/" target="_blank">
