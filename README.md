@@ -12,9 +12,9 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Excel-217346?style=flat-square&logo=microsoft-excel&logoColor=white">
-  <img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white">
-  <img src="https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white">
+  <a href="https://github.com/Chetan171102/Ecommerce-Project/blob/main/ecommerce_cleaned.xlsx"><img src="https://img.shields.io/badge/Excel-217346?style=flat-square&logo=microsoft-excel&logoColor=white"></a>
+  <a href="https://github.com/Chetan171102/Ecommerce-Project/blob/main/ecommerce_esa.ipynb"><img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white"></a>
+  <a href="https://github.com/Chetan171102/Ecommerce-Project/blob/main/Ecommerce_analysis.sql"><img src="https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white"></a>
 </p>
 
 ---
